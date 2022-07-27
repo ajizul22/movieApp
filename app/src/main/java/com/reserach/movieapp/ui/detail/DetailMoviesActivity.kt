@@ -20,6 +20,7 @@ import com.reserach.movieapp.util.adapter.ReviewsAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 
 
 class DetailMoviesActivity : AppCompatActivity() {
@@ -113,6 +114,11 @@ class DetailMoviesActivity : AppCompatActivity() {
             }
         })
 
+    }
+
+    override fun onDestroy() {
+        coroutineScope.cancel()
+        super.onDestroy()
     }
 
 

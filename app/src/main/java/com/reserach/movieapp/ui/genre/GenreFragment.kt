@@ -26,6 +26,7 @@ import com.reserach.movieapp.util.adapter.TopMovieAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 
 class GenreFragment: Fragment() {
 
@@ -185,6 +186,11 @@ class GenreFragment: Fragment() {
                 else -> return
             }
         }
+    }
+
+    override fun onDestroy() {
+        coroutineScope.cancel()
+        super.onDestroy()
     }
 
 }

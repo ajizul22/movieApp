@@ -45,12 +45,7 @@ class MainActivity : AppCompatActivity() {
                         bind.tvTitle.text = "Genre"
                     }
                 }
-
             }
-
-
-
-
         }
     }
 
