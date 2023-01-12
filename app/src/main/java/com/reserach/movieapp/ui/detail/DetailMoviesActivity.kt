@@ -7,13 +7,14 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import com.reserach.movieapp.R
 import com.reserach.movieapp.data.remote.MovieApi
 import com.reserach.movieapp.data.remote.RetrofitClient
-import com.reserach.movieapp.data.remote.response.Movie
 import com.reserach.movieapp.data.remote.response.ReviewsResponse
 import com.reserach.movieapp.databinding.ActivityDetailMoviesBinding
 import com.reserach.movieapp.util.adapter.ReviewsAdapter
@@ -31,8 +32,8 @@ class DetailMoviesActivity : AppCompatActivity() {
     private lateinit var adapterReviews: ReviewsAdapter
     private lateinit var layoutManager: LinearLayoutManager
 
+    private lateinit var youTubePlayer: YouTubePlayerView
     private var pageReviews = 1
-
     var id = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,6 +50,9 @@ class DetailMoviesActivity : AppCompatActivity() {
 
         adapterReviews = ReviewsAdapter()
         layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+
+        youTubePlayer = bind.youtubePlayerView
+        lifecycle.addObserver(youTubePlayer)
 
         initRequestData()
         initComponent()
@@ -77,6 +81,7 @@ class DetailMoviesActivity : AppCompatActivity() {
         if (id != 0) {
             viewModel.callDetailMovieApi(id)
             viewModel.callReviewsMovie(id,pageReviews)
+            viewModel.callMovieVideo(id)
         }
     }
 
@@ -106,6 +111,31 @@ class DetailMoviesActivity : AppCompatActivity() {
             }
         })
 
+        viewModel.moviesVideo.observe(this) {
+            if (it != null) {
+                for (movie in it) {
+                    if (movie.site == "YouTube" && movie.official) {
+
+                        youTubePlayer.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                            override fun onReady(youTubePlayer: YouTubePlayer) {
+                                val videoId = movie.key
+                                youTubePlayer.cueVideo(videoId, 0f)
+                            }
+                        })
+                        break
+                    }
+                }
+            }
+        }
+
+        viewModel.isSuccessVideos.observe(this) {
+            if (it) {
+                bind.tvVideosNotFound.visibility = View.GONE
+            } else {
+                bind.tvVideosNotFound.visibility = View.VISIBLE
+            }
+        }
+
         viewModel.isSuccessReviews.observe(this, Observer {
             if (it) {
                 bind.tvReviewsNotFound.visibility = View.GONE
@@ -113,14 +143,10 @@ class DetailMoviesActivity : AppCompatActivity() {
                 bind.tvReviewsNotFound.visibility = View.VISIBLE
             }
         })
-
     }
 
     override fun onDestroy() {
         coroutineScope.cancel()
         super.onDestroy()
     }
-
-
-
 }

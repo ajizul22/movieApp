@@ -1,10 +1,7 @@
 package com.reserach.movieapp.data.remote
 
 import com.reserach.movieapp.BuildConfig
-import com.reserach.movieapp.data.remote.response.GenresResponse
-import com.reserach.movieapp.data.remote.response.MovieDetailsResponse
-import com.reserach.movieapp.data.remote.response.MovieResponse
-import com.reserach.movieapp.data.remote.response.ReviewsResponse
+import com.reserach.movieapp.data.remote.response.*
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -12,7 +9,7 @@ import retrofit2.http.Query
 
 interface MovieApi {
     companion object {
-        const val BASE_URL = "http://api.themoviedb.org/3/"
+        const val BASE_URL = "https://api.themoviedb.org/3/"
         const val API_KEY = BuildConfig.MOVIEDB_API_KEY
     }
 
@@ -49,5 +46,10 @@ interface MovieApi {
         @Path("movie_id") movieId: Int,
         @Query("page") page: Int
     ): ReviewsResponse
+
+    @GET("movie/{movie_id}/videos?api_key=${API_KEY}")
+    suspend fun getMovieVideo(
+        @Path("movie_id") movieId: Int,
+    ): MovieVideoResponse
 
 }

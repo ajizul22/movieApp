@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.reserach.movieapp.data.remote.MovieApi
 import com.reserach.movieapp.data.remote.response.MovieDetailsResponse
+import com.reserach.movieapp.data.remote.response.MovieVideoResponse
 import com.reserach.movieapp.data.remote.response.ReviewsResponse
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
@@ -15,6 +16,8 @@ class DetailMovieViewModel: ViewModel(), CoroutineScope {
     val dataMovies = MutableLiveData<MovieDetailsResponse>()
     val isSuccessReviews = MutableLiveData<Boolean>()
     val listReview = MutableLiveData<List<ReviewsResponse.Results>>()
+    val isSuccessVideos = MutableLiveData<Boolean>()
+    val moviesVideo = MutableLiveData<List<MovieVideoResponse.Results>>()
 
     override val coroutineContext: CoroutineContext
         get() = Job() + Dispatchers.Main
@@ -22,6 +25,8 @@ class DetailMovieViewModel: ViewModel(), CoroutineScope {
     fun setService(service: MovieApi) {
         this.service = service
     }
+
+
 
     fun callDetailMovieApi(id: Int) {
         launch {
@@ -66,6 +71,31 @@ class DetailMovieViewModel: ViewModel(), CoroutineScope {
                     isSuccessReviews.value = false
                 }
 
+            }
+        }
+    }
+
+    fun callMovieVideo(id: Int) {
+        launch {
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    service.getMovieVideo(id)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+
+                    withContext(Dispatchers.Main) {
+                        isSuccessVideos.value = false
+                    }
+                }
+            }
+
+            if (result is MovieVideoResponse) {
+                if (result.results.isNotEmpty()) {
+                    isSuccessVideos.value = true
+                    moviesVideo.value = result.results
+                } else {
+                    isSuccessVideos.value = false
+                }
             }
         }
     }
