@@ -59,19 +59,14 @@ class DetailMoviesActivity : AppCompatActivity() {
         initData()
 
     }
-
-
-
     private fun initComponent() {
         bind.apply {
             ivBack.setOnClickListener {
                 onBackPressed()
             }
-
             rcvReviews.adapter = adapterReviews
             rcvReviews.layoutManager = layoutManager
             rcvReviews.setHasFixedSize(true)
-
         }
     }
 

@@ -1,6 +1,8 @@
 package com.reserach.movieapp.util.adapter
 
+import android.text.TextUtils
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -12,7 +14,6 @@ import com.reserach.movieapp.databinding.ItemMovieBinding
 import com.reserach.movieapp.databinding.ItemReviewsBinding
 
 class ReviewsAdapter: RecyclerView.Adapter<ReviewsAdapter.ReviewsViewHolder>() {
-    private var onItemClickCallback: OnItemClickCallback? = null
     private val list = ArrayList<ReviewsResponse.Results>()
 
     fun setList(data: ArrayList<ReviewsResponse.Results>) {
@@ -31,12 +32,30 @@ class ReviewsAdapter: RecyclerView.Adapter<ReviewsAdapter.ReviewsViewHolder>() {
                     .into(profileImage)
 
                 tvUsername.text = data.author_details.username
-
                 tvOverview.text = data.content
 
-                bind.root.setOnClickListener {
-                    onItemClickCallback?.onItemClicked(data)
+                if (data.content.length >= 60) {
+                    tvReadMore.visibility = View.VISIBLE
+                } else {
+                    tvReadMore.visibility = View.GONE
                 }
+
+                // expand content reviews
+                var isExpand = false
+                itemView.setOnClickListener {
+                    if (!isExpand) {
+                        isExpand = true
+                        tvOverview.maxLines = 2
+                        tvOverview.ellipsize = TextUtils.TruncateAt.END
+                        tvReadMore.visibility = View.VISIBLE
+                    } else {
+                        isExpand = false
+                        tvOverview.maxLines = Int.MAX_VALUE
+                        tvReadMore.visibility = View.GONE
+                        tvOverview.ellipsize = null
+                    }
+                }
+
             }
         }
     }
@@ -51,13 +70,5 @@ class ReviewsAdapter: RecyclerView.Adapter<ReviewsAdapter.ReviewsViewHolder>() {
     }
 
     override fun getItemCount(): Int = list.size
-
-    interface OnItemClickCallback{
-        fun onItemClicked(data: ReviewsResponse.Results)
-    }
-
-    fun setOnItemClickCallback(onItemClickCallback: OnItemClickCallback) {
-        this.onItemClickCallback = onItemClickCallback
-    }
 
 }
