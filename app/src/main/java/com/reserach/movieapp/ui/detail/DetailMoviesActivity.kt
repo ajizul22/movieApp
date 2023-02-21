@@ -1,5 +1,6 @@
 package com.reserach.movieapp.ui.detail
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +18,7 @@ import com.reserach.movieapp.data.remote.MovieApi
 import com.reserach.movieapp.data.remote.RetrofitClient
 import com.reserach.movieapp.data.remote.response.ReviewsResponse
 import com.reserach.movieapp.databinding.ActivityDetailMoviesBinding
+import com.reserach.movieapp.util.GlobalFunc
 import com.reserach.movieapp.util.adapter.ReviewsAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +38,8 @@ class DetailMoviesActivity : AppCompatActivity() {
     private var pageReviews = 1
     var id = 0
 
+    private lateinit var globalFunc: GlobalFunc
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         bind = DataBindingUtil.setContentView(this, R.layout.activity_detail_movies)
@@ -53,6 +57,8 @@ class DetailMoviesActivity : AppCompatActivity() {
 
         youTubePlayer = bind.youtubePlayerView
         lifecycle.addObserver(youTubePlayer)
+
+        globalFunc = GlobalFunc()
 
         initRequestData()
         initComponent()
@@ -98,6 +104,8 @@ class DetailMoviesActivity : AppCompatActivity() {
             }
         })
 
+
+
         viewModel.listReview.observe(this, Observer {
             if (it != null) {
                 val list = ArrayList<ReviewsResponse.Results>()
@@ -123,11 +131,27 @@ class DetailMoviesActivity : AppCompatActivity() {
             }
         }
 
+        viewModel.isSuccess.observe(this) {
+            if (!it) {
+                viewModel.errorMessage.observe(this) { code ->
+                    if (code != null || code != 0) {
+                        globalFunc.showDialogError(this, globalFunc.responseError(code))
+                    }
+                }
+            }
+        }
+
         viewModel.isSuccessVideos.observe(this) {
             if (it) {
                 bind.tvVideosNotFound.visibility = View.GONE
             } else {
                 bind.tvVideosNotFound.visibility = View.VISIBLE
+
+                viewModel.errorMessageVideo.observe(this) { code ->
+                    if (code != null || code != 0) {
+                        globalFunc.showDialogError(this, globalFunc.responseError(code))
+                    }
+                }
             }
         }
 
@@ -136,6 +160,12 @@ class DetailMoviesActivity : AppCompatActivity() {
                 bind.tvReviewsNotFound.visibility = View.GONE
             } else {
                 bind.tvReviewsNotFound.visibility = View.VISIBLE
+
+                viewModel.errorMessageReview.observe(this) { code ->
+                    if (code != null || code != 0) {
+                        globalFunc.showDialogError(this, globalFunc.responseError(code))
+                    }
+                }
             }
         })
     }

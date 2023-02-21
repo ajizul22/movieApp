@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import com.reserach.movieapp.data.remote.response.Movie
 import com.reserach.movieapp.data.remote.MovieApi
 import com.reserach.movieapp.data.remote.response.MovieResponse
+import com.reserach.movieapp.util.GlobalFunc
 import kotlinx.coroutines.*
+import retrofit2.HttpException
 import kotlin.coroutines.CoroutineContext
 
 class HomeViewModel : ViewModel(), CoroutineScope {
@@ -17,6 +19,8 @@ class HomeViewModel : ViewModel(), CoroutineScope {
     val listPopular = MutableLiveData<List<Movie>>()
     val isSuccessTop = MutableLiveData<Boolean>()
     val listTop = MutableLiveData<List<Movie>>()
+    val errorMessageUpcoming = MutableLiveData<Int>()
+    val globalFunc = GlobalFunc()
 
     override val coroutineContext: CoroutineContext
         get() = Job() + Dispatchers.Main
@@ -30,11 +34,12 @@ class HomeViewModel : ViewModel(), CoroutineScope {
             val result = withContext(Dispatchers.IO) {
                 try {
                     service.getUpComingMovies()
-                } catch (e: Throwable) {
+                } catch (e: HttpException) {
                     e.printStackTrace()
 
                     withContext(Dispatchers.Main) {
                         isSuccessComingsoon.value = false
+                        errorMessageUpcoming.value = e.code()
                     }
                 }
             }
@@ -51,7 +56,7 @@ class HomeViewModel : ViewModel(), CoroutineScope {
             val result = withContext(Dispatchers.IO) {
                 try {
                     service.getPopularMovies(page)
-                } catch (e: Throwable) {
+                } catch (e: HttpException) {
                     e.printStackTrace()
 
                     withContext(Dispatchers.Main) {
@@ -72,7 +77,7 @@ class HomeViewModel : ViewModel(), CoroutineScope {
             val result = withContext(Dispatchers.IO) {
                 try {
                     service.getTopMovies(page)
-                } catch (e: Throwable) {
+                } catch (e: HttpException) {
                     e.printStackTrace()
 
                     withContext(Dispatchers.Main) {

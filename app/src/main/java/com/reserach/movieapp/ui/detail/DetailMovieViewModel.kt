@@ -6,7 +6,9 @@ import com.reserach.movieapp.data.remote.MovieApi
 import com.reserach.movieapp.data.remote.response.MovieDetailsResponse
 import com.reserach.movieapp.data.remote.response.MovieVideoResponse
 import com.reserach.movieapp.data.remote.response.ReviewsResponse
+import com.reserach.movieapp.util.GlobalFunc
 import kotlinx.coroutines.*
+import retrofit2.HttpException
 import kotlin.coroutines.CoroutineContext
 
 class DetailMovieViewModel: ViewModel(), CoroutineScope {
@@ -18,6 +20,9 @@ class DetailMovieViewModel: ViewModel(), CoroutineScope {
     val listReview = MutableLiveData<List<ReviewsResponse.Results>>()
     val isSuccessVideos = MutableLiveData<Boolean>()
     val moviesVideo = MutableLiveData<List<MovieVideoResponse.Results>>()
+    val errorMessage = MutableLiveData<Int>()
+    val errorMessageReview = MutableLiveData<Int>()
+    val errorMessageVideo = MutableLiveData<Int>()
 
     override val coroutineContext: CoroutineContext
         get() = Job() + Dispatchers.Main
@@ -26,18 +31,17 @@ class DetailMovieViewModel: ViewModel(), CoroutineScope {
         this.service = service
     }
 
-
-
     fun callDetailMovieApi(id: Int) {
         launch {
             val result = withContext(Dispatchers.IO) {
                 try {
                     service.getMovieDetail(id)
-                } catch (e: Throwable) {
+                } catch (e: HttpException) {
                     e.printStackTrace()
 
                     withContext(Dispatchers.Main) {
                         isSuccess.value = false
+                        errorMessage.value = e.code()
                     }
                 }
             }
@@ -54,11 +58,12 @@ class DetailMovieViewModel: ViewModel(), CoroutineScope {
             val result = withContext(Dispatchers.IO) {
                 try {
                     service.getMovieReview(id, page)
-                } catch (e: Throwable) {
+                } catch (e: HttpException) {
                     e.printStackTrace()
 
                     withContext(Dispatchers.Main) {
                         isSuccessReviews.value = false
+                        errorMessageReview.value = e.code()
                     }
                 }
             }
@@ -80,11 +85,12 @@ class DetailMovieViewModel: ViewModel(), CoroutineScope {
             val result = withContext(Dispatchers.IO) {
                 try {
                     service.getMovieVideo(id)
-                } catch (e: Throwable) {
+                } catch (e: HttpException) {
                     e.printStackTrace()
 
                     withContext(Dispatchers.Main) {
                         isSuccessVideos.value = false
+                        errorMessageVideo.value = e.code()
                     }
                 }
             }

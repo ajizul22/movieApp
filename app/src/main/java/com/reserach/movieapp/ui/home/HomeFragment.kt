@@ -1,5 +1,7 @@
 package com.reserach.movieapp.ui.home
 
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,6 +21,7 @@ import com.reserach.movieapp.data.remote.RetrofitClient
 import com.reserach.movieapp.data.remote.response.Movie
 import com.reserach.movieapp.databinding.FragmentHomeBinding
 import com.reserach.movieapp.ui.detail.DetailMoviesActivity
+import com.reserach.movieapp.util.GlobalFunc
 import com.reserach.movieapp.util.adapter.PopularMovieAdapter
 import com.reserach.movieapp.util.adapter.TopMovieAdapter
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +42,8 @@ class HomeFragment: Fragment() {
 
     private lateinit var adapterTop: TopMovieAdapter
     private lateinit var layoutManagerTop: LinearLayoutManager
+
+    private lateinit var globalFunc: GlobalFunc
 
     private var pagePopular = 1
     private var pageTop = 1
@@ -62,6 +67,8 @@ class HomeFragment: Fragment() {
         layoutManagerTop = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
         viewModel.setService(service)
+
+        globalFunc = GlobalFunc()
 
         initRequestData()
         initComponent()
@@ -144,7 +151,7 @@ class HomeFragment: Fragment() {
     }
 
     private fun initData() {
-        viewModel.listUpComing.observe(viewLifecycleOwner, {
+        viewModel.listUpComing.observe(viewLifecycleOwner) {
             if (it != null) {
                 val listImage = ArrayList<SlideModel>()
                 for ((index, value) in it.withIndex()) {
@@ -162,44 +169,118 @@ class HomeFragment: Fragment() {
                 if (listImage != null) {
                     bind.ivSliderComingsoon.setImageList(listImage, ScaleTypes.FIT)
                 }
+                showNoData(1, false)
 
 //                adapterUpComing.setList(it as ArrayList<Movie>)
+            } else {
+                showNoData(1, true)
             }
-        })
+        }
 
-        viewModel.isSuccessComingsoon.observe(viewLifecycleOwner, {
+        viewModel.isSuccessComingsoon.observe(viewLifecycleOwner) {
             if (it) {
                 showLoading(1, false)
+            } else {
+               showNoData(1, true)
+                viewModel.errorMessageUpcoming.observe(viewLifecycleOwner) { code ->
+                    if (code != null || code != 0) {
+                        showLoading(1, false)
+                        globalFunc.showDialogError(requireContext(), globalFunc.responseError(code))
+                    }
+                }
             }
-        })
+        }
 
-        viewModel.listPopular.observe(viewLifecycleOwner, {
+        viewModel.listPopular.observe(viewLifecycleOwner) {
             if (it != null) {
                 val list = ArrayList<Movie>()
                 list.addAll(it)
                 adapterPopular.setList(list)
+                showNoData(2, false)
+            } else {
+                showNoData(2, true)
             }
-        })
+        }
 
-        viewModel.isSuccessPopular.observe(viewLifecycleOwner, {
+        viewModel.isSuccessPopular.observe(viewLifecycleOwner) {
             if (it) {
                 showLoading(2, false)
+            } else {
+                showNoData(2, true)
+                showLoading(2, false)
             }
-        })
+        }
 
-        viewModel.listTop.observe(viewLifecycleOwner, {
+        viewModel.listTop.observe(viewLifecycleOwner) {
             if (it != null) {
                 val list = ArrayList<Movie>()
                 list.addAll(it)
                 adapterTop.setList(list)
+                showNoData(3, false)
+            } else {
+                showNoData(3, true)
             }
-        })
+        }
 
-        viewModel.isSuccessTop.observe(viewLifecycleOwner, {
+        viewModel.isSuccessTop.observe(viewLifecycleOwner) { it ->
             if (it) {
                 showLoading(3, false)
+            } else {
+                showLoading(3, false)
+                showNoData(3, true)
             }
-        })
+        }
+
+
+    }
+
+    private fun showNoData(code: Int, state: Boolean) {
+        // 1 is coming soon
+        // 2 is popular movies
+        // 3 is top rated movies
+        when (code) {
+            1 -> {
+                if (state) {
+                    bind.apply {
+                        ivSliderComingsoon.visibility = View.GONE
+                        ivNoDataUpcoming.visibility = View.VISIBLE
+                    }
+                } else {
+                    bind.apply {
+                        ivSliderComingsoon.visibility = View.VISIBLE
+                        ivNoDataUpcoming.visibility = View.GONE
+                    }
+                }
+            }
+
+            2 -> {
+                if (state) {
+                    bind.apply {
+                        rcvPopularMovie.visibility = View.GONE
+                        ivNoDataPopular.visibility = View.VISIBLE
+                    }
+                } else {
+                    bind.apply {
+                        rcvPopularMovie.visibility = View.VISIBLE
+                        ivNoDataPopular.visibility = View.GONE
+                    }
+                }
+            }
+
+            3 -> {
+                if (state) {
+                    bind.apply {
+                        rcvTopMovie.visibility = View.GONE
+                        ivNoDataTop.visibility = View.VISIBLE
+                    }
+                } else {
+                    bind.apply {
+                        rcvTopMovie.visibility = View.VISIBLE
+                        ivNoDataTop.visibility = View.GONE
+                    }
+                }
+            }
+        }
     }
 
     private fun showLoading(type: Int, state: Boolean) {

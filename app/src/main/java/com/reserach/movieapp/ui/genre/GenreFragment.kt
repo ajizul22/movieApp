@@ -1,5 +1,6 @@
 package com.reserach.movieapp.ui.genre
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,6 +20,7 @@ import com.reserach.movieapp.data.remote.response.GenresResponse
 import com.reserach.movieapp.data.remote.response.Movie
 import com.reserach.movieapp.databinding.FragmentGenreBinding
 import com.reserach.movieapp.ui.detail.DetailMoviesActivity
+import com.reserach.movieapp.util.GlobalFunc
 import com.reserach.movieapp.util.adapter.GenresAdapter
 import com.reserach.movieapp.util.adapter.MovieByGenreAdapter
 import com.reserach.movieapp.util.adapter.PopularMovieAdapter
@@ -42,6 +44,8 @@ class GenreFragment: Fragment() {
     private lateinit var adapterMovies: MovieByGenreAdapter
     private lateinit var layoutManagerMovies: GridLayoutManager
 
+    private lateinit var globalFunc: GlobalFunc
+
     var genres: String = ""
 
     private var pageMovies = 1
@@ -63,6 +67,8 @@ class GenreFragment: Fragment() {
         layoutManagerMovies = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false )
 
         viewModel.setService(service)
+
+        globalFunc = GlobalFunc()
 
         initRequestData()
         initComponent()
@@ -133,32 +139,56 @@ class GenreFragment: Fragment() {
     }
 
     private fun initData() {
-        viewModel.listGenres.observe(viewLifecycleOwner, {
+        viewModel.listGenres.observe(viewLifecycleOwner) {
             if (it != null) {
                 adapterGenre.setList(it as ArrayList<GenresResponse.Genres>)
+                showNoData(1, false)
+            } else {
+                showLoading(false, 1)
+                showNoData(1, true)
             }
-        })
+        }
 
-        viewModel.isSuccessGenres.observe(viewLifecycleOwner, {
+        viewModel.isSuccessGenres.observe(viewLifecycleOwner) {
             if (it) {
                 showLoading(false, 1)
+            } else {
+                viewModel.errorMessageGenres.observe(viewLifecycleOwner) { code ->
+                    if (code != null || code != 0) {
+                        showLoading(false, 1)
+                        globalFunc.showDialogError(requireContext(), globalFunc.responseError(code))
+                        showNoData(1, true)
+                    }
+                }
             }
-        })
+        }
 
-        viewModel.listMovies.observe(viewLifecycleOwner, {
+        viewModel.listMovies.observe(viewLifecycleOwner) {
             if (it != null) {
                 val list = ArrayList<Movie>()
                 list.addAll(it)
                 adapterMovies.setList(list)
                 bind.progressbarMoviesScroll.visibility = View.GONE
+                showNoData(2, false)
+            } else {
+                showLoading(false, 2)
+                showNoData(2, true)
             }
-        })
+        }
 
-        viewModel.isSuccessMovies.observe(viewLifecycleOwner, {
+        viewModel.isSuccessMovies.observe(viewLifecycleOwner) {
             if (it) {
                 showLoading(false, 2)
+            } else {
+                viewModel.errorMessageMovies.observe(viewLifecycleOwner) { code ->
+                    if (code != null || code != 0) {
+                        showLoading(false, 2)
+                        globalFunc.showDialogError(requireContext(), globalFunc.responseError(code))
+                        showNoData(2, true)
+                    }
+                }
             }
-        })
+        }
     }
 
     private fun showLoading(state: Boolean, code: Int) {
@@ -169,7 +199,7 @@ class GenreFragment: Fragment() {
             bind.lyNavigation.visibility = View.GONE
         } else {
             when (code) {
-                // 1 for genre, 2 for movies
+                // 1 for genre, 2 for movies by genre
                 1 -> {
                     bind.rcvGenres.visibility = View.VISIBLE
                     bind.rcvMovie.visibility = View.GONE
@@ -184,6 +214,46 @@ class GenreFragment: Fragment() {
                     bind.lyNavigation.visibility = View.VISIBLE
                 }
                 else -> return
+            }
+        }
+    }
+
+    private fun showNoData(code: Int, state: Boolean) {
+        // 1 is genre
+        // 2 is movies by genre
+        when (code) {
+            1 -> {
+                if (state) {
+                    bind.apply {
+                        rcvGenres.visibility = View.GONE
+                        rcvMovie.visibility = View.GONE
+                        ivNoData.visibility = View.VISIBLE
+                        bind.lyNavigation.visibility = View.GONE
+                    }
+                } else {
+                    bind.apply {
+                        rcvGenres.visibility = View.VISIBLE
+                        rcvMovie.visibility = View.GONE
+                        ivNoData.visibility = View.GONE
+                    }
+                }
+            }
+
+            2 -> {
+                if (state) {
+                    bind.apply {
+                        rcvGenres.visibility = View.GONE
+                        rcvMovie.visibility = View.GONE
+                        ivNoData.visibility = View.VISIBLE
+                        bind.lyNavigation.visibility = View.VISIBLE
+                    }
+                } else {
+                    bind.apply {
+                        rcvGenres.visibility = View.GONE
+                        rcvMovie.visibility = View.VISIBLE
+                        ivNoData.visibility = View.GONE
+                    }
+                }
             }
         }
     }

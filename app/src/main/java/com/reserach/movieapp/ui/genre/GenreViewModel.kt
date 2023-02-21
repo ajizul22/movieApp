@@ -6,7 +6,9 @@ import com.reserach.movieapp.data.remote.MovieApi
 import com.reserach.movieapp.data.remote.response.GenresResponse
 import com.reserach.movieapp.data.remote.response.Movie
 import com.reserach.movieapp.data.remote.response.MovieResponse
+import com.reserach.movieapp.util.GlobalFunc
 import kotlinx.coroutines.*
+import retrofit2.HttpException
 import kotlin.coroutines.CoroutineContext
 
 class GenreViewModel: ViewModel(), CoroutineScope {
@@ -16,7 +18,8 @@ class GenreViewModel: ViewModel(), CoroutineScope {
     val isSuccessMovies = MutableLiveData<Boolean>()
     val listGenres = MutableLiveData<List<GenresResponse.Genres>>()
     val listMovies = MutableLiveData<List<Movie>>()
-
+    val errorMessageGenres = MutableLiveData<Int>()
+    val errorMessageMovies = MutableLiveData<Int>()
     override val coroutineContext: CoroutineContext
         get() = Job() + Dispatchers.Main
 
@@ -29,11 +32,12 @@ class GenreViewModel: ViewModel(), CoroutineScope {
             val result = withContext(Dispatchers.IO) {
                 try {
                     service.getGenres()
-                } catch (e: Throwable) {
+                } catch (e: HttpException) {
                     e.printStackTrace()
 
                     withContext(Dispatchers.Main) {
                         isSuccessGenres.value = false
+                        errorMessageGenres.value = e.code()
                     }
                 }
             }
@@ -50,11 +54,12 @@ class GenreViewModel: ViewModel(), CoroutineScope {
             val result = withContext(Dispatchers.IO) {
                 try {
                     service.getMoviesByGenres(genres, page)
-                } catch (e: Throwable) {
+                } catch (e: HttpException) {
                     e.printStackTrace()
 
                     withContext(Dispatchers.Main) {
                         isSuccessMovies.value = false
+                        errorMessageMovies.value = e.code()
                     }
                 }
             }
