@@ -50,7 +50,7 @@
             app:layout_constraintTop_toBottomOf="@id/ly_title">
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tv_username"
+                android:id="@+id/et_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Your email address">
@@ -63,13 +63,14 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/textField"
+                android:id="@+id/et_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:backgroundTint="@color/black"
                 android:hint="Your Password"
                 app:boxStrokeColor="@color/black"
+                app:errorEnabled="true"
                 app:endIconMode="password_toggle"
                 app:hintTextColor="@color/black">
 
@@ -79,6 +80,15 @@
                     android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tv_error_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/ubuntu_regular"
+                android:textColor="@android:color/holo_red_dark"
+                android:textSize="16sp" />
+
 
             <Button
                 android:id="@+id/btn_login"

@@ -22,26 +22,33 @@ class OpeningActivity : AppCompatActivity() {
 
     private fun initComponent() {
         bind.apply {
-            val loginFragment = LoginFragment()
-            loadFragment(loginFragment)
+            loadFragment()
         }
     }
 
     override fun onBackPressed() {
-        MaterialAlertDialogBuilder(this)
-            .setMessage("Exit apps?")
-            .setNegativeButton("cancel", null)
-            .setPositiveButton("yes") { dialog, which ->
-                // Respond to positive button press
-                super.onBackPressed()
-            }
-            .show()
+        val count = supportFragmentManager.backStackEntryCount
+
+        if (count == 1) {
+            //additional code
+            MaterialAlertDialogBuilder(this)
+                .setMessage("Exit apps?")
+                .setNegativeButton("cancel", null)
+                .setPositiveButton("yes") { dialog, which ->
+                    // Respond to positive button press
+                    finish()
+                }
+                .show()
+        } else {
+            supportFragmentManager.popBackStack()
+        }
     }
 
-    private fun loadFragment(fragment: Fragment){
+    private fun loadFragment(){
+        val fragment = LoginFragment()
         val transaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.nav_host_fragment_container_opening, fragment)
-        transaction.disallowAddToBackStack()
+        transaction.addToBackStack(fragment::class.java.name)
         transaction.commit()
     }
 }

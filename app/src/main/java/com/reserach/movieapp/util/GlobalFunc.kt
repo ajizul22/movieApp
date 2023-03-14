@@ -24,4 +24,11 @@ class GlobalFunc {
             .show()
     }
 
+    fun showDialogSimpleMessage(context: Context, message: String) {
+        MaterialAlertDialogBuilder(context, R.style.AlertDialogTheme)
+            .setMessage(message)
+            .setPositiveButton("Ok", null)
+            .show()
+    }
+
 }

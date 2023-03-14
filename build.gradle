@@ -49,6 +49,5 @@ ext {
     retrofitVersion = '2.9.0'
     testExtJunitVersion = '1.1.1'
     materialVersion = '1.2.1'
-    roomVersion = '2.2.1'
     archLifecycleVersion = '2.2.0'
 }
